@@ -11,7 +11,7 @@ public class AutoLandDbContext : DbContext
 
     public DbSet<Payment> Payments { get; set; }
 
-    public DbSet<Rewiew> Rewiews { get; set; }
+    public DbSet<Review> Reviews { get; set; }
     public DbSet<Insurance> Insurances { get; set; }
 
     public AutoLandDbContext()
@@ -23,14 +23,27 @@ public class AutoLandDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Rent>()
-            .HasOne(r => r.User)
-            .WithMany()
-            .OnDelete(DeleteBehavior.Restrict); 
+      .HasOne(r => r.User)
+      .WithMany(u => u.Rents)
+      .HasForeignKey(r => r.UserId)  
+      .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Rent>()
             .HasOne(r => r.Car)
             .WithMany()
-            .OnDelete(DeleteBehavior.Restrict); 
+            .HasForeignKey(r => r.CarId)  
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Review>()
+        .HasOne(r => r.Sender)
+        .WithMany(u => u.RewiewsReceived)
+        .HasForeignKey(r => r.SenderId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Review>()
+            .HasOne(r => r.Reciever)
+            .WithMany()
+            .HasForeignKey(r => r.RecieverId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<User>().HasData(
             new User
             {
@@ -102,7 +115,7 @@ public class AutoLandDbContext : DbContext
 
         string configString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=AutoLandDB;Integrated Security=False;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
 
-        optionsBuilder.UseSqlServer(configString);
+        optionsBuilder.UseSqlServer(configString, sqlServerOptions => sqlServerOptions.EnableRetryOnFailure());
     }
 
 }
@@ -118,6 +131,14 @@ public class User
 
     public string? Licence { get; set; }
 
+
+    public ICollection<Car>? OwnedCars { get; set; } = new List<Car>();
+
+
+    public ICollection<Rent>? Rents { get; set; } = new List<Rent>();
+
+    public ICollection<Review>? RewiewsReceived { get; set; } = new List<Review>();
+
 }
 
 public class Car
@@ -128,7 +149,6 @@ public class Car
 
     public int? Year { get; set; }
 
-    public double? Raiting { get; set; }
 
     public string? BodyType { get; set; }
 
@@ -143,6 +163,11 @@ public class Car
 
     public int? Price { get; set; }
     public string? Status { get; set; }
+
+
+
+    public ICollection<Review>? Reviews { get; set; } = new List<Review>();
+
 
 }
 
@@ -177,7 +202,7 @@ public class Payment
 
 }
 
-public class Rewiew
+public class Review
 {
 
     public int Id { get; set; }

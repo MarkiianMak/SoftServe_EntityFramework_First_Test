@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using System.ComponentModel;
+using System.Reflection;
 
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -15,7 +16,7 @@ var Rents = context.Rents;
 
 var Payments = context.Payments;
 
-var Rewiews = context.Rewiews;
+var Reviews = context.Reviews;
 
 var Insurances = context.Insurances;
 
@@ -42,7 +43,7 @@ do
                 continue;
             }
             string name, email, licence;
-            decimal stateFee  =0;
+            decimal stateFee = 0;
             Console.WriteLine("Введіть ваше ім'я:");
             name = Console.ReadLine();
             var checkIfUserExists = Users.SingleOrDefault(x => x.Name == name);
@@ -80,14 +81,16 @@ do
             Console.WriteLine("На скільки днів хочете орендувати авто?");
             int days = int.Parse(Console.ReadLine());
 
-            if(days > 15) stateFee = 150;
+            if(days > 15) stateFee = 150; // Типу контроль за станом машини
             
 
             Console.WriteLine($"Оренда буде коштувати {days * Cars.Find(a).Price + stateFee}$");
 
             context.SaveChanges();
             checkIfUserExists = Users.SingleOrDefault(x => x.Name == name);
-            Rents.Add(new Rent
+
+
+            checkIfUserExists.Rents.Add(new Rent
             {
                 User = checkIfUserExists,
                 Car = Cars.Find(a),
@@ -96,6 +99,7 @@ do
                 Price = days * Cars.Find(a).Price + stateFee,
                 Status = "Очікує Підтвердження"
             });
+    
             Payments.Add(new Payment
             {
                 User = checkIfUserExists,
@@ -152,7 +156,9 @@ do
             Console.WriteLine("Вкажіть ціну за день: ");
             price = int.Parse(Console.ReadLine());
 
-            Cars.Add(new Car
+  
+
+            checkIfUserExists.OwnedCars.Add(new Car
             {
                 Brand = brand,
                 Model = model,
@@ -165,13 +171,15 @@ do
                 Price = price,
 
             });
+            
+            
             context.SaveChanges();
         }
         else if (a == 3)
         {
 
             Console.WriteLine("---  Список Машин  ---");
-            foreach (var item in Cars)
+            foreach (var item in AvailibleCars)
             {
                 Console.WriteLine($" {item.Id}. {item.Brand} {item.Model} {item.Year} {item.FuelType}  ");
             }
@@ -184,6 +192,7 @@ do
             Console.WriteLine("Введіть ваше ім'я:");
             name = Console.ReadLine();
             var checkIfUserExists = Users.SingleOrDefault(x => x.Name == name);
+            
             if (checkIfUserExists != null)
             {
                 Console.WriteLine("Рейтинг? (від 0 до 5)");
@@ -198,9 +207,9 @@ do
                     model = Console.ReadLine();
 
                     var changeCarRaiting = Cars.SingleOrDefault(x => x.Model == model);
-                    changeCarRaiting.Raiting = r;
 
-                    Rewiews.Add(new Rewiew
+         
+                    changeCarRaiting.Reviews.Add(new Review
                     {
                         Sender = checkIfUserExists,
                         Car = changeCarRaiting,
@@ -215,15 +224,14 @@ do
                     nameOfRatedUser = Console.ReadLine();
 
                     var changeUserRaiting = Users.SingleOrDefault(x => x.Name == nameOfRatedUser);
-                    changeUserRaiting.Raiting = r;
-
-                    Rewiews.Add(new Rewiew
+                    changeUserRaiting.RewiewsReceived.Add(new Review
                     {
                         Sender = checkIfUserExists,
                         Reciever = changeUserRaiting,
                         Raiting = r,
                         Comment = coment,
                     });
+
                 }
 
             }

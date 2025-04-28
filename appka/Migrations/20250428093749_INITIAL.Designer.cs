@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace appka.Migrations
 {
     [DbContext(typeof(AutoLandDbContext))]
-    [Migration("20250416182139_Raiting")]
-    partial class Raiting
+    [Migration("20250428093749_INITIAL")]
+    partial class INITIAL
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,9 +52,6 @@ namespace appka.Migrations
 
                     b.Property<int?>("Price")
                         .HasColumnType("int");
-
-                    b.Property<double?>("Raiting")
-                        .HasColumnType("float");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
@@ -205,7 +202,7 @@ namespace appka.Migrations
                     b.ToTable("Rents");
                 });
 
-            modelBuilder.Entity("Rewiew", b =>
+            modelBuilder.Entity("Review", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -236,7 +233,7 @@ namespace appka.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Rewiews");
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("User", b =>
@@ -290,7 +287,7 @@ namespace appka.Migrations
             modelBuilder.Entity("Car", b =>
                 {
                     b.HasOne("User", "User")
-                        .WithMany()
+                        .WithMany("OwnedCars")
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
@@ -324,7 +321,7 @@ namespace appka.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("User", "User")
-                        .WithMany()
+                        .WithMany("Rents")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
@@ -333,20 +330,21 @@ namespace appka.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Rewiew", b =>
+            modelBuilder.Entity("Review", b =>
                 {
                     b.HasOne("Car", "Car")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("CarId");
 
                     b.HasOne("User", "Reciever")
                         .WithMany()
-                        .HasForeignKey("RecieverId");
+                        .HasForeignKey("RecieverId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("User", "Sender")
-                        .WithMany()
+                        .WithMany("RewiewsReceived")
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Car");
@@ -354,6 +352,20 @@ namespace appka.Migrations
                     b.Navigation("Reciever");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("Car", b =>
+                {
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("User", b =>
+                {
+                    b.Navigation("OwnedCars");
+
+                    b.Navigation("Rents");
+
+                    b.Navigation("RewiewsReceived");
                 });
 #pragma warning restore 612, 618
         }
